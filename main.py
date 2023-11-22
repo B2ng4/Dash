@@ -1,29 +1,36 @@
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
-import plotly.express as px
+from dash import html
+from dash import dcc
+from dash import dash_table
+from dash import html
+from dash import dcc
+import plotly.graph_objs as go
 import pandas as pd
 
-# Create the app
+# Данные
+data = {'date': ['2022-01-01', '2022-02-01', '2022-03-01', '2022-04-01', '2022-05-01'],
+        'value': [10, 20, 30, 25, 35]}
+df = pd.DataFrame(data)
+df['date'] = pd.to_datetime(df['date'])
+
+# Создаем Dash приложение
 app = dash.Dash(__name__)
 
-# Load dataset using Plotly
-tips = px.data.tips()
-
-fig = px.scatter(tips, x="total_bill", y="tip") # Create a scatterplot
-
-app.layout = html.Div(children=[
-   html.H1(children='Hello Dash'),  # Create a title with H1 tag
-
-   html.Div(children='''
-       Dash: A web application framework for your data.
-   '''),  # Display some text
-
-   dcc.Graph(
-       id='example-graph',
-       figure=fig
-   )  # Display the Plotly figure
+# Определяем макет приложения
+app.layout = html.Div([
+    html.H1('График временного ряда'),
+    dcc.Graph(
+        figure={
+            'data': [
+                go.Scatter(x=df['date'], y=df['value'], mode='lines+markers', name='Временной ряд')
+            ],
+            'layout': {
+                'title': 'Линейный график временного ряда',
+                'xaxis': {'title': 'Дата'},
+                'yaxis': {'title': 'Значение'}
+            }
+        }
+    )
 ])
-
 if __name__ == '__main__':
-   app.run_server(debug=True)
+    app.run_server(debug=True)
