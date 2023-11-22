@@ -2,31 +2,35 @@ import dash
 from dash import html
 from dash import dcc
 from dash import dash_table
+from dash import html
+from dash import dcc
+import plotly.graph_objs as go
+import pandas as pd
 
-#  Объяснение данных строк пока опускается, будет объяснено далее
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+# Данные
+data = {'date': ['2022-01-01', '2022-02-01', '2022-03-01', '2022-04-01', '2022-05-01'],
+        'value': [10, 20, 30, 25, 35]}
+df = pd.DataFrame(data)
+df['date'] = pd.to_datetime(df['date'])
 
-app.layout = html.Div(children=[
-    html.H1(children='Hello Dash'),
+# Создаем Dash приложение
+app = dash.Dash(__name__)
 
-    html.Div(children='''
-        Dash: A web application framework for Python.
-    '''),
-
+# Определяем макет приложения
+app.layout = html.Div([
+    html.H1('График временного ряда'),
     dcc.Graph(
-        id='example-graph',
         figure={
             'data': [
-                {'x': [1, 2, 3], 'y': [4, 1, 2], 'type': 'bar', 'name': 'SF'},
-                {'x': [1, 2, 3], 'y': [2, 4, 5], 'type': 'bar', 'name': u'Montréal'},
+                go.Scatter(x=df['date'], y=df['value'], mode='lines+markers', name='Временной ряд')
             ],
             'layout': {
-                'title': 'Dash Data Visualization'
+                'title': 'Линейный график временного ряда',
+                'xaxis': {'title': 'Дата'},
+                'yaxis': {'title': 'Значение'}
             }
         }
     )
 ])
-
 if __name__ == '__main__':
     app.run_server(debug=True)
