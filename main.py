@@ -1,29 +1,32 @@
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
-import plotly.express as px
-import pandas as pd
+from dash import html
+from dash import dcc
+from dash import dash_table
 
-# Create the app
-app = dash.Dash(__name__)
-
-# Load dataset using Plotly
-tips = px.data.tips()
-
-fig = px.scatter(tips, x="total_bill", y="tip") # Create a scatterplot
+#  Объяснение данных строк пока опускается, будет объяснено далее
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.layout = html.Div(children=[
-   html.H1(children='Hello Dash'),  # Create a title with H1 tag
+    html.H1(children='Hello Dash'),
 
-   html.Div(children='''
-       Dash: A web application framework for your data.
-   '''),  # Display some text
+    html.Div(children='''
+        Dash: A web application framework for Python.
+    '''),
 
-   dcc.Graph(
-       id='example-graph',
-       figure=fig
-   )  # Display the Plotly figure
+    dcc.Graph(
+        id='example-graph',
+        figure={
+            'data': [
+                {'x': [1, 2, 3], 'y': [4, 1, 2], 'type': 'bar', 'name': 'SF'},
+                {'x': [1, 2, 3], 'y': [2, 4, 5], 'type': 'bar', 'name': u'Montréal'},
+            ],
+            'layout': {
+                'title': 'Dash Data Visualization'
+            }
+        }
+    )
 ])
 
 if __name__ == '__main__':
-   app.run_server(debug=True)
+    app.run_server(debug=True)
