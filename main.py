@@ -10,7 +10,19 @@ from dash import html
 from dash import dcc
 import pandas as pd
 from dash.dash_table.Format import Group
+import dash
+import plotly.express as px
+import pandas as pd
 
+
+df = pd.read_csv('Data_Base/Data.csv')
+fig = px.scatter(df, x='profit', y='assets', color='investments', title='Profit vs Assets Scatter Plot')
+
+periods = [
+    {'label': 'Месяц', 'value': 'Месяц'},
+    {'label': 'Квартал', 'value': 'Квартал'},
+    {'label': 'Год', 'value': 'Год'}
+]
 
 # Создаем данные для таблицы
 data = {'Показатель': ['Общее прибыль', 'Чистый профит', 'Реальная прибыль', 'Проfit/ОТМ'],
@@ -62,9 +74,26 @@ app.layout = html.Div([
             style_header={'backgroundColor': 'rgb(20, 20, 20)', 'color': 'white'},
             style_cell={'textAlign': 'center', 'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'}
         )
+    ]),
+    html.Div([
+        dcc.Graph(figure=fig)
+]),
+    html.Div([
+        html.Label('Выберите период анализа:'),
+        dcc.Dropdown(
+            id='period-dropdown',
+            options=periods,
+            value='month'  # Значение по умолчанию
+        ),
+        html.Div(id='output-container')  # Элемент для отображения выбранного значения
     ])
 ])
-
+@app.callback(
+    dash.dependencies.Output('output-container', 'children'),
+    [dash.dependencies.Input('period-dropdown', 'value')]
+)
+def update_output(selected_period):
+    return f'Выбран период: {selected_period}'
 # Запускаем приложение
 if __name__ == '__main__':
     app.run_server(debug=True)
