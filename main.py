@@ -1,99 +1,90 @@
-import dash
-from dash import html
-from dash import dcc
 from dash import dash_table
-from dash import html
-from dash import dcc
 import plotly.graph_objs as go
-import dash
 from dash import html
 from dash import dcc
-import pandas as pd
-from dash.dash_table.Format import Group
 import dash
 import plotly.express as px
 import pandas as pd
 
-
+#Подключение к csv
 df = pd.read_csv('Data_Base/Data.csv')
-fig = px.scatter(df, x='profit', y='assets', color='investments', title='Profit vs Assets Scatter Plot')
+line_df = pd.read_csv('Data_Base/Data_line.csv')
+ran_df = pd.read_csv('Data_Base/Data_rad.csv')
+table_df = pd.read_csv('Data_Base/Data_table.csv')
+dif = pd.read_csv('Data_Base/Data_str.csv')
 
-periods = [
-    {'label': 'Месяц', 'value': 'Месяц'},
-    {'label': 'Квартал', 'value': 'Квартал'},
-    {'label': 'Год', 'value': 'Год'}
-]
+#карта
+fig = px.scatter(df, x='x', y='y', color='color')
 
-# Создаем данные для таблицы
-data = {'Показатель': ['Общее прибыль', 'Чистый профит', 'Реальная прибыль', 'Проfit/ОТМ'],
-        'Значение': [100000, 50000, 30000, 15]}
-df = pd.DataFrame(data)
+#Линейный график
+line = pd.DataFrame(line_df)
+line['date'] = pd.to_datetime(line['date'], format='%d.%m.%Y')
 
-# Создаем данные для круговой диаграммы
-labels = ['Категория 1', 'Категория 2', 'Категория 3', 'Категория 4', 'Категория 5']
-values = [35, 20, 15, 22, 12]
+#Круговой
+figure = go.Figure(data=[go.Pie(labels=ran_df['labels'], values=ran_df['values'])])
 
-# Создаем данные для линейного графика
-line_data = {'date': ['2022-01-01', '2022-02-01', '2022-03-01', '2022-04-01', '2022-05-01'],
-        'value': [10, 20, 30, 25, 35]}
-line_df = pd.DataFrame(line_data)
-line_df['date'] = pd.to_datetime(line_df['date'])
+#ТАБЛИЦА
+data = pd.DataFrame(table_df)
 
 # Создаем Dash приложение
 app = dash.Dash(__name__)
 
 # Определяем макет приложения
 app.layout = html.Div([
-    html.H1('Финансовые показатели'),
+    html.H1('Применение библиотеки Dash'),
+    html.H3('Анализ данных о продажах', style={'text-align': 'center'}),
     dcc.Graph(
         figure={
             'data': [
-                {'x': line_df['date'], 'y': line_df['value'], 'type': 'scatter', 'mode': 'lines+markers', 'name': 'Временной ряд'}
+                {'x': line['date'], 'y': line['value'], 'type': 'scatter', 'mode': 'lines+markers', 'name': 'Временной ряд'}
             ],
             'layout': {
-                'title': 'График расходов и доходов',
-                'xaxis': {'title': 'Месяц'},
+                'title': '',
+                'xaxis': {'title': 'День'},
                 'yaxis': {'title': 'Сумма'}
             }
         }
     ),
-    dcc.Graph(
-        figure={
-            'data': [go.Pie(labels=labels, values=values)],
-            'layout': {
-                'title': 'Круговая диаграмма'
-            }
-        }
-    ),
     html.Div([
-        html.H1('Таблица с данными'),
+    html.H3('Анализ данных о посещении веб-сайта', style={'text-align': 'center'}),
+        dcc.Graph(figure=figure)
+    ]),
+    html.Div([
+    html.H3('Анализ данных о розничной продаже', style={'text-align': 'center'}),
         dash_table.DataTable(
             columns=[{'id': 'Показатель', 'name': 'Показатель'}, {'id': 'Значение', 'name': 'Значение'}],
-            data=df.to_dict('records'),
+            data=data.to_dict('records'),
             style_table={'border': '1px solid black'},
             style_header={'backgroundColor': 'rgb(20, 20, 20)', 'color': 'white'},
             style_cell={'textAlign': 'center', 'backgroundColor': 'rgb(50, 50, 50)', 'color': 'white'}
         )
     ]),
     html.Div([
+        html.H3('Анализ зависимостей', style={'text-align': 'center'}),
         dcc.Graph(figure=fig)
 ]),
-    html.Div([
-        html.Label('Выберите период анализа:'),
-        dcc.Dropdown(
-            id='period-dropdown',
-            options=periods,
-            value='month'  # Значение по умолчанию
-        ),
-        html.Div(id='output-container')  # Элемент для отображения выбранного значения
-    ])
+html.Div([
+    html.H1('Интерактивный график', style={'text-align': 'center'}),
+    dcc.Dropdown(
+        id='column1',
+        options=[
+            {'label': 'Зависимость 1', 'value': 'column1'},
+            {'label': 'Зависимость 2', 'value': 'column2'},
+            {'label': 'Зависимость 3', 'value': 'column3'}
+        ],
+        value='column3'
+    ),
+    dcc.Graph(id='graph')
+])
 ])
 @app.callback(
-    dash.dependencies.Output('output-container', 'children'),
-    [dash.dependencies.Input('period-dropdown', 'value')]
+    dash.dependencies.Output('graph', 'figure'),
+    [dash.dependencies.Input('column1', 'value')]
 )
-def update_output(selected_period):
-    return f'Выбран период: {selected_period}'
+def update_graph(selected_column1):
+    fig = px.scatter(dif, x='x', y=selected_column1, color = 'color')
+    return fig
+
 # Запускаем приложение
 if __name__ == '__main__':
     app.run_server(debug=True)
